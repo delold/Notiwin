@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using Squirrel;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -10,13 +11,17 @@ namespace Notiwin {
         private System.Windows.Forms.NotifyIcon icon;
         private System.Windows.Forms.ContextMenu contextMenu;
 
+        private UpdateManager manager;
+
         private NotificationUtils notification;
         private WebsocketUtils websocket;
         private List<JObject> pushHistory;
 
         private void Application_Startup(object sender, StartupEventArgs e) {
-            RegistryUtils.RegisterApp();
 
+            manager = new UpdateManager(@"C:\Work\Webserver\WinPushService\Notiwin\Releases");
+            RegistryUtils.Bootstrap(manager);
+            
             websocket = new WebsocketUtils();
             notification = new NotificationUtils();
             pushHistory = new List<JObject>();
@@ -30,13 +35,13 @@ namespace Notiwin {
                     }),
                     new System.Windows.Forms.MenuItem("-"),
                     new System.Windows.Forms.MenuItem("&Exit", (a, b) => {
+                        manager?.Dispose();
                         Current.Shutdown();
                     })
                 }
             };
 
-
-        icon = new System.Windows.Forms.NotifyIcon()
+            icon = new System.Windows.Forms.NotifyIcon()
             {
                 Visible = true,
                 Text = ResourceAssembly.GetName().Name,
@@ -80,6 +85,8 @@ namespace Notiwin {
         private void Init() {
             websocket.Token = Notiwin.Properties.Settings.Default.Token;
             websocket.Connect();
+
+            
         }
 
         private async void OnAction(IDictionary<string, string> data) {
@@ -202,6 +209,7 @@ namespace Notiwin {
 
         private void OnTokenDeny() {
             CloseLoginWindow();
+            manager?.Dispose();
             Current.Shutdown();
         }
 

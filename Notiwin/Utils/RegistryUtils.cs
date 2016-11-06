@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using Notiwin.ShellHelpers;
+using Squirrel;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -7,10 +8,21 @@ using System.Runtime.InteropServices;
 
 namespace Notiwin {
     class RegistryUtils {
-        public static void RegisterApp() {
+
+        public async static void Bootstrap(UpdateManager manager) {
+            SquirrelAwareApp.HandleEvents(
+                onInitialInstall: v => { RegisterApp(); manager.CreateUninstallerRegistryEntry(); },
+                onAppUpdate: v => ReregisterApp(),
+                onAppUninstall: v => { UnregisterApp(); manager.RemoveUninstallerRegistryEntry(); }
+            );
+
+            await manager.UpdateApp();
+        }
+
+        private static void RegisterApp() {
             string shortcutPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk";
 
-            if (!File.Exists(shortcutPath)) {
+            if (true || !File.Exists(shortcutPath)) {
                 string exePath = Process.GetCurrentProcess().MainModule.FileName;
                 CreateShortcut(shortcutPath, exePath);
                 RegisterComServer(exePath);
@@ -20,15 +32,20 @@ namespace Notiwin {
             FixBrowserVersion();
         }
 
-        public static void UnregisterApp() {
+        private static void ReregisterApp() {
+            UnregisterApp();
+            RegisterApp();
+        }
+
+        private static void UnregisterApp() {
             //revert COM server registration
             Registry.CurrentUser.DeleteSubKey(string.Format("SOFTWARE\\Classes\\CLSID\\{{{0}}}\\LocalServer32", typeof(NotificationActivator).GUID));
 
             //revert ShowInActionCenter
-            Registry.CurrentUser.DeleteSubKeyTree(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings");
+            Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings\" + Constants.AppId);
 
             //revert FixBrowserVersion
-            Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION");
+            Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION\" + Constants.AppId);
 
             //delete shortcut
             string shortcutPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk";
