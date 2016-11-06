@@ -4,11 +4,5 @@
              ShutdownMode="OnExplicitShutdown"
              xmlns:local="clr-namespace:Notiwin" Startup="Application_Startup" Exit="Application_Exit">
     <Application.Resources>
-        <ContextMenu x:Key="TrayMenu">
-            <MenuItem Header="Standard MenuItem 1" />
-            <MenuItem Header="Standard MenuItem 2" />
-            <MenuItem Header="Standard MenuItem 3" />
-        </ContextMenu>
     </Application.Resources>
-    
 </Application>

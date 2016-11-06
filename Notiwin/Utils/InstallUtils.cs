@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using Notiwin.ShellHelpers;
-using Squirrel;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -8,8 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Notiwin {
-    class RegistryUtils {
-
+    class InstallUtils {
         public static void RegisterApp() {
             string shortcutPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk";
 
@@ -46,7 +44,7 @@ namespace Notiwin {
             Process[] processList = Process.GetProcessesByName(Assembly.GetExecutingAssembly().GetName().Name);
             Process currentProcess = Process.GetCurrentProcess();
 
-            if (p?.Length > 0) {
+            if (processList?.Length > 0) {
                 foreach(Process instance in processList) {
                     if (instance.Id != currentProcess.Id) {
                         instance.Kill();

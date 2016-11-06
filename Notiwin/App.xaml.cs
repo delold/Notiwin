@@ -17,11 +17,11 @@ namespace Notiwin {
 
         private void Application_Startup(object sender, StartupEventArgs e) {
             SquirrelAwareApp.HandleEvents(
-                onAppUpdate: v => RegistryUtils.ReregisterApp(),
-                onInitialInstall: v => RegistryUtils.RegisterApp(),
+                onAppUpdate: v => InstallUtils.ReregisterApp(),
+                onInitialInstall: v => InstallUtils.RegisterApp(),
                 onAppUninstall: v => {
-                    RegistryUtils.KillOtherInstances();
-                    RegistryUtils.UnregisterApp();
+                    InstallUtils.KillOtherInstances();
+                    InstallUtils.UnregisterApp();
                     Current.Shutdown();
                 }
             );
