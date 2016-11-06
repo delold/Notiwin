@@ -70,5 +70,29 @@ namespace Notiwin.Properties {
                 this["ApiKey"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SquareIcons {
+            get {
+                return ((bool)(this["SquareIcons"]));
+            }
+            set {
+                this["SquareIcons"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ContextMenuActions {
+            get {
+                return ((bool)(this["ContextMenuActions"]));
+            }
+            set {
+                this["ContextMenuActions"] = value;
+            }
+        }
     }
 }

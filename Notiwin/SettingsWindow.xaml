@@ -1,0 +1,41 @@
+﻿<Window x:Class="Notiwin.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Notiwin"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        mc:Ignorable="d"
+        Title="Settings" Height="295" Width="450" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <GroupBox DockPanel.Dock="Top" Header="General" Margin="10,7,10,5">
+            <StackPanel Margin="10">
+                <CheckBox Name="StartupCheck" Margin="0,0,0,5">
+                    <TextBlock>Run app on Windows startup</TextBlock>
+                </CheckBox>
+                <CheckBox Name="DismissalCheck" Margin="0,0,0,5">
+                    <TextBlock>Keep notifications even if dismissed</TextBlock>
+                </CheckBox>
+                <CheckBox Name="NoSoundCheck" Margin="0,0,0,5">
+                    <TextBlock>Disable notifications sounds</TextBlock>
+                </CheckBox>
+                <CheckBox Name="SquareIconsCheck" Margin="0,0,0,5">
+                    <TextBlock>Disable rounded icons</TextBlock>
+                </CheckBox>
+                <CheckBox Name="ContextMenuCheck" Margin="0,0,0,5">
+                    <TextBlock>Hide notification actions to context menu (right click on notificaiton)</TextBlock>
+                </CheckBox>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox DockPanel.Dock="Top" Header="About" Margin="10,2,10,5">
+            <StackPanel Margin="10">
+                <TextBlock><Hyperlink NavigateUri="https://github.com/delold/Notiwin" RequestNavigate="OnRequestNavigate">Notiwin</Hyperlink>: Windows port of <Hyperlink NavigateUri="https://github.com/jariz/Noti">Noti</Hyperlink></TextBlock>
+            </StackPanel>
+        </GroupBox>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10,5,10,10" HorizontalAlignment="Right" >
+            <Button Content="OK" Padding="15,0" Margin="0,0,10,0" Click="SaveClick" />
+            <Button Content="Cancel" Padding="15,0" Click="CloseClick" />
+        </StackPanel>
+        
+    </DockPanel>
+</Window>

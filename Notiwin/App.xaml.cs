@@ -21,8 +21,22 @@ namespace Notiwin {
             notification = new NotificationUtils();
             pushHistory = new List<JObject>();
 
-            contextMenu = new System.Windows.Forms.ContextMenu();
-            icon = new System.Windows.Forms.NotifyIcon()
+            contextMenu = new System.Windows.Forms.ContextMenu()
+            {
+                MenuItems =
+                {
+                    new System.Windows.Forms.MenuItem("&Settings", (a, b) => {
+                        (new SettingsWindow()).Show();
+                    }),
+                    new System.Windows.Forms.MenuItem("-"),
+                    new System.Windows.Forms.MenuItem("&Exit", (a, b) => {
+                        Current.Shutdown();
+                    })
+                }
+            };
+
+
+        icon = new System.Windows.Forms.NotifyIcon()
             {
                 Visible = true,
                 Text = ResourceAssembly.GetName().Name,
@@ -32,13 +46,11 @@ namespace Notiwin {
 
             websocket.LoginError += OnLoginError;
             websocket.Data += OnData;
-            RebuildContextMenu();
 
             NotificationActivator.Action += OnAction;
             NotificationActivator.Initialize();
 
             OpenLoginWindow(true);
-
             Init();
         }
 
@@ -70,33 +82,6 @@ namespace Notiwin {
             websocket.Connect();
         }
 
-        private void OnClose(object sender, EventArgs e) {
-            Current.Shutdown();
-        }
-
-        private void RebuildContextMenu() {
-            contextMenu.MenuItems.Clear();
-
-            contextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("&Silent mode " + ((Notiwin.Properties.Settings.Default.Silent) ? "OFF" : "ON"), OnSilentToggle));
-            contextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("&Ignore dismissal " + ((Notiwin.Properties.Settings.Default.NoDismiss) ? "OFF" : "ON"), OnDismissToggle));
-            contextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("-"));
-            contextMenu.MenuItems.Add(new System.Windows.Forms.MenuItem("&Exit", OnClose));
-        }
-
-        private void OnDismissToggle(object sender, EventArgs e) {
-            Notiwin.Properties.Settings.Default.NoDismiss = !Notiwin.Properties.Settings.Default.NoDismiss;
-            Notiwin.Properties.Settings.Default.Save();
-
-            RebuildContextMenu();
-        }
-
-        private void OnSilentToggle(object sender, EventArgs e) {
-            Notiwin.Properties.Settings.Default.Silent = !Notiwin.Properties.Settings.Default.Silent;
-            Notiwin.Properties.Settings.Default.Save();
-
-            RebuildContextMenu();
-        }
-
         private async void OnAction(IDictionary<string, string> data) {
             JObject push = pushHistory.Find(item => ((string)item["notification_id"]).Equals(data["notification_id"]));
 
@@ -105,6 +90,7 @@ namespace Notiwin {
                     string message = data["message"];
                    
                     if (data["notification_id"].Contains("sms_")) {
+                        //TODO: implement SMS sending
                         throw new NotImplementedException("Not implemented SMS send");
                     } else {
                         PushbulletUtils.QuickReply(push, message);
@@ -113,7 +99,8 @@ namespace Notiwin {
                 case "activate":
                     try {
                         string packageName = (string)push["package_name"];
-                        System.Diagnostics.Process.Start(await PushbulletUtils.ResolveUrlFromPackageName(packageName));
+                        string url = await PushbulletUtils.ResolveUrlFromPackageName(packageName);
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url));
                     } catch { }
                     break;
 

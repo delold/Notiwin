@@ -54,13 +54,24 @@ namespace Notiwin {
                 Type type = actions.GetType();
                 type.GetProperty("Inputs").SetValue(actions, Inputs);
 
-                if (Buttons.Count > 5) {
+                if (Buttons.Count > 5 || Properties.Settings.Default.ContextMenuActions) {
                     IList<ToastContextMenuItem> menuItems = new List<ToastContextMenuItem>();
+                    IList<IToastButton> exceptions = new List<IToastButton>();
+
                     foreach (ToastButton button in Buttons) {
+                        if (button.TextBoxId?.Length > 0) {
+                            exceptions.Add(button);
+                            continue;
+                        }
+
                         menuItems.Add(new ToastContextMenuItem(button.Content, button.Arguments)
                         {
                             ActivationType = button.ActivationType
                         });
+                    }
+
+                    if (exceptions.Count > 0) {
+                        type.GetProperty("Buttons").SetValue(actions, exceptions);
                     }
 
                     type.GetProperty("ContextMenuItems").SetValue(actions, menuItems);
@@ -87,7 +98,7 @@ namespace Notiwin {
                             AppLogoOverride = Image != null ? new ToastGenericAppLogo()
                             {
                                 Source = Image,
-                                HintCrop = ToastGenericAppLogoCrop.Circle
+                                HintCrop = Properties.Settings.Default.SquareIcons ? ToastGenericAppLogoCrop.Default : ToastGenericAppLogoCrop.Circle 
                             } : null
                         }
                     },
