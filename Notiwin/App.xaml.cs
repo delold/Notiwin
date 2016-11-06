@@ -16,6 +16,9 @@ namespace Notiwin {
         private List<JObject> pushHistory;
 
         private void Application_Startup(object sender, StartupEventArgs e) {
+#if DEBUG
+            InstallUtils.RegisterApp();
+#else
             SquirrelAwareApp.HandleEvents(
                 onAppUpdate: v => InstallUtils.ReregisterApp(),
                 onInitialInstall: v => InstallUtils.RegisterApp(),
@@ -25,6 +28,7 @@ namespace Notiwin {
                     Current.Shutdown();
                 }
             );
+#endif
 
             websocket = new WebsocketUtils();
             notification = new NotificationUtils();
@@ -85,15 +89,22 @@ namespace Notiwin {
             }
 
             NotificationActivator.Uninitialize();
+#if DEBUG
+            InstallUtils.UnregisterApp();
+#endif
         }
 
+#if DEBUG
+        private void Init() {
+#else
         private async void Init() {
             //TODO: implement periodic self-update
             using (var manager = new UpdateManager(Constants.UpdateUrl)) {
                 await manager.UpdateApp();
             }
+#endif
 
-            websocket.Token = Notiwin.Properties.Settings.Default.Token;
+        websocket.Token = Notiwin.Properties.Settings.Default.Token;
             websocket.Connect();
 
         }
