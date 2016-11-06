@@ -4,22 +4,13 @@ using Squirrel;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Notiwin {
     class RegistryUtils {
 
-        public async static void Bootstrap(UpdateManager manager) {
-            SquirrelAwareApp.HandleEvents(
-                onInitialInstall: v => { RegisterApp(); manager.CreateUninstallerRegistryEntry(); },
-                onAppUpdate: v => ReregisterApp(),
-                onAppUninstall: v => { UnregisterApp(); manager.RemoveUninstallerRegistryEntry(); }
-            );
-
-            await manager.UpdateApp();
-        }
-
-        private static void RegisterApp() {
+        public static void RegisterApp() {
             string shortcutPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk";
 
             if (true || !File.Exists(shortcutPath)) {
@@ -32,25 +23,35 @@ namespace Notiwin {
             FixBrowserVersion();
         }
 
-        private static void ReregisterApp() {
+        public static void ReregisterApp() {
             UnregisterApp();
             RegisterApp();
         }
 
-        private static void UnregisterApp() {
+        public static void UnregisterApp() {
             //revert COM server registration
-            Registry.CurrentUser.DeleteSubKey(string.Format("SOFTWARE\\Classes\\CLSID\\{{{0}}}\\LocalServer32", typeof(NotificationActivator).GUID));
+            Registry.CurrentUser.DeleteSubKeyTree(string.Format("SOFTWARE\\Classes\\CLSID\\{{{0}}}", typeof(NotificationActivator).GUID));
 
             //revert ShowInActionCenter
             Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings\" + Constants.AppId);
 
             //revert FixBrowserVersion
-            Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION\" + Constants.AppId);
+            Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true).DeleteValue(Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName));
 
             //delete shortcut
-            string shortcutPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk";
-            if (File.Exists(shortcutPath)) {
-                File.Delete(shortcutPath);
+            File.Delete(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk");
+        }
+
+        public static void KillOtherInstances() {
+            Process[] processList = Process.GetProcessesByName(Assembly.GetExecutingAssembly().GetName().Name);
+            Process currentProcess = Process.GetCurrentProcess();
+
+            if (p?.Length > 0) {
+                foreach(Process instance in processList) {
+                    if (instance.Id != currentProcess.Id) {
+                        instance.Kill();
+                    }
+                }
             }
         }
 
@@ -72,6 +73,7 @@ namespace Notiwin {
             newShortcutProperties.Commit();
 
             IPersistFile newShortcutSave = (IPersistFile)newShortcut;
+            
             newShortcutSave.Save(shortcutPath, true);
         }
 

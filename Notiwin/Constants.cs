@@ -3,5 +3,6 @@
         public static string AppId { get { return "cz.duong.notiwin"; } }
         public static string AppName { get { return "Notiwin"; } }
         public static string ClientId { get { return "hwYmquKx86IMaTHJJ4Pd6DCO4OYv7w0E"; } }
+        public static string UpdateUrl { get { return @"C:\Work\Webserver\WinPushService\Notiwin\Releases"; } }
     }
 }

@@ -11,17 +11,21 @@ namespace Notiwin {
         private System.Windows.Forms.NotifyIcon icon;
         private System.Windows.Forms.ContextMenu contextMenu;
 
-        private UpdateManager manager;
-
         private NotificationUtils notification;
         private WebsocketUtils websocket;
         private List<JObject> pushHistory;
 
         private void Application_Startup(object sender, StartupEventArgs e) {
+            SquirrelAwareApp.HandleEvents(
+                onAppUpdate: v => RegistryUtils.ReregisterApp(),
+                onInitialInstall: v => RegistryUtils.RegisterApp(),
+                onAppUninstall: v => {
+                    RegistryUtils.KillOtherInstances();
+                    RegistryUtils.UnregisterApp();
+                    Current.Shutdown();
+                }
+            );
 
-            manager = new UpdateManager(@"C:\Work\Webserver\WinPushService\Notiwin\Releases");
-            RegistryUtils.Bootstrap(manager);
-            
             websocket = new WebsocketUtils();
             notification = new NotificationUtils();
             pushHistory = new List<JObject>();
@@ -35,7 +39,6 @@ namespace Notiwin {
                     }),
                     new System.Windows.Forms.MenuItem("-"),
                     new System.Windows.Forms.MenuItem("&Exit", (a, b) => {
-                        manager?.Dispose();
                         Current.Shutdown();
                     })
                 }
@@ -69,6 +72,8 @@ namespace Notiwin {
         }
 
         private void Application_Exit(object sender, ExitEventArgs e) {
+            CloseLoginWindow();
+
             if (icon != null) {
                 icon.Visible = false;
                 icon.Dispose();
@@ -82,11 +87,15 @@ namespace Notiwin {
             NotificationActivator.Uninitialize();
         }
 
-        private void Init() {
+        private async void Init() {
+            //TODO: implement periodic self-update
+            using (var manager = new UpdateManager(Constants.UpdateUrl)) {
+                await manager.UpdateApp();
+            }
+
             websocket.Token = Notiwin.Properties.Settings.Default.Token;
             websocket.Connect();
 
-            
         }
 
         private async void OnAction(IDictionary<string, string> data) {
@@ -208,8 +217,6 @@ namespace Notiwin {
         }
 
         private void OnTokenDeny() {
-            CloseLoginWindow();
-            manager?.Dispose();
             Current.Shutdown();
         }
 
