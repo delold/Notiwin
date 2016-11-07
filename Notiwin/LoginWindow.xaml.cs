@@ -17,8 +17,12 @@ namespace Notiwin {
         public event TokenDenyHandler TokenDeny;
         public event ApiKeyHandler ApiKey;
 
-        public LoginWindow() {
+        public LoginWindow(bool logout = false) {
             InitializeComponent();
+
+            if (logout) {
+                //System.Windows.MessageBox.Show("Logout: " + SetOption(81, 3) + " _ " + SetOption(42, null));
+            }
 
             LoginBrowser.Navigated += OnNavigate;
             LoginBrowser.LoadCompleted += OnLoadCompleted;
@@ -34,6 +38,11 @@ namespace Notiwin {
                 style.addRule(".agree-page > div:nth-child(2)", "display:none;");
                 style.addRule(".agree-page h1", "margin-top:100px !important;");
                 style.addRule("#header img", "display:none;");
+                style.addRule("#account-btn:not([style*='background'])", "display:none;");
+
+                style.addRule(".approve", "margin-bottom: 0 !important;");
+                style.addRule(".deny", "background: #e85845;color: white !important;width: 230px;height: 60px;margin: 0 auto;line-height: 22px;font-size:20px !important;text-decoration: none;display: flex;align-items: center;justify-content: center;");
+
             }
         }
 
@@ -71,9 +80,7 @@ namespace Notiwin {
             }
         }
 
-        [DllImport("wininet.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        protected static extern bool InternetGetCookieEx(string url, string cookieName, StringBuilder cookieData, ref int size, Int32 dwFlags, IntPtr lpReserved);
-
+        
         public CookieCollection GetUriCookieContainer(Uri uri) {
             CookieContainer cookies = null;
             // Determine the size of the cookie
@@ -95,12 +102,14 @@ namespace Notiwin {
                 cookies = new CookieContainer();
                 cookies.SetCookies(uri, cookieData.ToString().Replace(';', ','));
             }
+
+
             return cookies.GetCookies(uri);
         }
 
         public string GetApiKeyFromCookie() {
             CookieCollection container = GetUriCookieContainer(new Uri("https://www.pushbullet.com"));
-            return container["api_key"].Value;
+            return container["api_key"]?.Value;
         }
 
         static bool SetOption(int settingCode, int? option) {
@@ -117,6 +126,9 @@ namespace Notiwin {
             if (optionPtr != IntPtr.Zero) Marshal.Release(optionPtr);
             return success;
         }
+
+        [DllImport("wininet.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        protected static extern bool InternetGetCookieEx(string url, string cookieName, StringBuilder cookieData, ref int size, Int32 dwFlags, IntPtr lpReserved);
 
         [DllImport("wininet.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);

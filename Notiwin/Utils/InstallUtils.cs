@@ -29,19 +29,29 @@ namespace Notiwin {
 
         public static void UnregisterApp() {
             // disable running on startup
-            RunOnStartup(false);
+            try {
+                RunOnStartup(false);
+            } catch { }
 
             //revert COM server registration
-            Registry.CurrentUser.DeleteSubKeyTree(string.Format("SOFTWARE\\Classes\\CLSID\\{{{0}}}", typeof(NotificationActivator).GUID));
-
+            try {
+                Registry.CurrentUser.DeleteSubKeyTree(string.Format("SOFTWARE\\Classes\\CLSID\\{{{0}}}", typeof(NotificationActivator).GUID));
+            } catch { }
+            
             //revert ShowInActionCenter
-            Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings\" + Constants.AppId);
+            try {
+                Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings\" + Constants.AppId);
+            } catch { }
 
             //revert FixBrowserVersion
-            Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true).DeleteValue(Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName));
+            try { 
+                Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true).DeleteValue(Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName));
+            } catch { }
 
             //delete shortcut
-            File.Delete(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk");
+            try {
+               File.Delete(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk");
+            } catch { }
         }
 
         public static void KillOtherInstances() {
@@ -106,7 +116,7 @@ namespace Notiwin {
             using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true)) {
                 if (enable) {
                     key.SetValue(Constants.AppName, '"' + GetExePath() + '"');
-                } else {
+                } else if (key.GetValue(Constants.AppName) != null) {
                     key.DeleteValue(Constants.AppName);
                 }
             }
