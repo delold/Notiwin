@@ -12,6 +12,7 @@ namespace Notiwin {
             NoSoundCheck.IsChecked = Properties.Settings.Default.Silent;
             SquareIconsCheck.IsChecked = Properties.Settings.Default.SquareIcons;
             ContextMenuCheck.IsChecked = Properties.Settings.Default.ContextMenuActions;
+            StartupCheck.IsChecked = InstallUtils.IsRunningOnStartup();
         }
 
         private void SaveClick(object sender, RoutedEventArgs e) {
@@ -21,6 +22,8 @@ namespace Notiwin {
             Properties.Settings.Default.ContextMenuActions = ContextMenuCheck.IsChecked == true;
 
             Properties.Settings.Default.Save();
+
+            InstallUtils.RunOnStartup(StartupCheck.IsChecked == true);
 
             Close();
         }

@@ -12,9 +12,8 @@ namespace Notiwin {
             string shortcutPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\" + Constants.AppName + ".lnk";
 
             if (true || !File.Exists(shortcutPath)) {
-                string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                CreateShortcut(shortcutPath, exePath);
-                RegisterComServer(exePath);
+                CreateShortcut(shortcutPath, GetExePath());
+                RegisterComServer();
                 ShowInActionCenter();
             }
 
@@ -22,11 +21,16 @@ namespace Notiwin {
         }
 
         public static void ReregisterApp() {
+            bool isStartup = IsRunningOnStartup();
             UnregisterApp();
             RegisterApp();
+            RunOnStartup(isStartup);
         }
 
         public static void UnregisterApp() {
+            // disable running on startup
+            RunOnStartup(false);
+
             //revert COM server registration
             Registry.CurrentUser.DeleteSubKeyTree(string.Format("SOFTWARE\\Classes\\CLSID\\{{{0}}}", typeof(NotificationActivator).GUID));
 
@@ -75,10 +79,10 @@ namespace Notiwin {
             newShortcutSave.Save(shortcutPath, true);
         }
 
-        private static void RegisterComServer(string exePath) {
+        private static void RegisterComServer() {
             string regString = string.Format("SOFTWARE\\Classes\\CLSID\\{{{0}}}\\LocalServer32", typeof(NotificationActivator).GUID);
-            var key = Registry.CurrentUser.CreateSubKey(regString);
-            key.SetValue(null, exePath);
+            var key = Registry.CurrentUser.CreateSubKey(GetExePath());
+            key.SetValue(null, GetExePath());
         }
 
         private static void ShowInActionCenter() {
@@ -91,12 +95,31 @@ namespace Notiwin {
         }
 
         private static void FixBrowserVersion() {
-            string exePath = Process.GetCurrentProcess().MainModule.FileName;
-            string filename = Path.GetFileName(exePath);
+            string filename = Path.GetFileName(GetExePath());
 
             using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION", true)) {
                 key?.SetValue(filename, 11001);
             }
+        }
+
+        public static void RunOnStartup(bool enable) {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true)) {
+                if (enable) {
+                    key.SetValue(Constants.AppName, '"' + GetExePath() + '"');
+                } else {
+                    key.DeleteValue(Constants.AppName);
+                }
+            }
+        }
+
+        public static bool IsRunningOnStartup() {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run")) {
+                return key.GetValue(Constants.AppName) != null;
+            }
+        }
+
+        private static string GetExePath() {
+            return Process.GetCurrentProcess().MainModule.FileName;
         }
 
     }

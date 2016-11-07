@@ -3,12 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:Notiwin"
         mc:Ignorable="d"
         Title="Login with Pushbullet" Height="500" Width="500" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
     <Grid>
         <WebBrowser x:Name="LoginBrowser" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="{x:Null}" />
-        <Controls:ProgressRing IsActive="True" Foreground="#FF2EBF5C" />
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Working on it...</TextBlock>
     </Grid>
 </Window>
