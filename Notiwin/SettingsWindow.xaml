@@ -31,10 +31,15 @@
                 <TextBlock><Hyperlink NavigateUri="https://github.com/delold/Notiwin" RequestNavigate="OnRequestNavigate">Notiwin</Hyperlink>: Windows port of <Hyperlink NavigateUri="https://github.com/jariz/Noti">Noti</Hyperlink></TextBlock>
             </StackPanel>
         </GroupBox>
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="10,5,10,10" HorizontalAlignment="Right" >
-            <Button Content="OK" Padding="15,0" Margin="0,0,10,0" Click="SaveClick" />
-            <Button Content="Cancel" Padding="15,0" Click="CloseClick" />
-        </StackPanel>
-        
+        <DockPanel DockPanel.Dock="Bottom" Margin="10,5,10,10"  >
+            <Button Content="Logout" Padding="15,0" Margin="0,0,10,0" Click="LogoutClick" HorizontalAlignment="Left" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="OK" Padding="15,0" Margin="0,0,10,0" Click="SaveClick" />
+                <Button Content="Cancel" Padding="15,0" Click="CloseClick" />
+            </StackPanel>
+            
+
+        </DockPanel>
+
     </DockPanel>
 </Window>

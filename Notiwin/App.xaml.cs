@@ -29,7 +29,6 @@ namespace Notiwin {
                 }
             );
 #endif
-
             websocket = new WebsocketUtils();
             notification = new NotificationUtils();
             pushHistory = new List<JObject>();
@@ -39,7 +38,9 @@ namespace Notiwin {
                 MenuItems =
                 {
                     new System.Windows.Forms.MenuItem("&Settings", (a, b) => {
-                        (new SettingsWindow()).Show();
+                        SettingsWindow settings = new SettingsWindow();
+                        settings.Logout += OnLogout;
+                        settings.Show();
                     }),
                     new System.Windows.Forms.MenuItem("-"),
                     new System.Windows.Forms.MenuItem("&Exit", (a, b) => {
@@ -62,8 +63,18 @@ namespace Notiwin {
             NotificationActivator.Action += OnAction;
             NotificationActivator.Initialize();
 
-            OpenLoginWindow(true);
+            OpenLoginWindow(openHidden: true);
             Init();
+        }
+
+        private void OnLogout() {
+            websocket.Disconnect();
+            websocket.Token = "";
+            Notiwin.Properties.Settings.Default.Token = "";
+            Notiwin.Properties.Settings.Default.ApiKey = "";
+            Notiwin.Properties.Settings.Default.Save();
+
+            OpenLoginWindow(logout: true);
         }
 
         private void OnApiKey(string apikey) {
@@ -106,7 +117,6 @@ namespace Notiwin {
 
         websocket.Token = Notiwin.Properties.Settings.Default.Token;
             websocket.Connect();
-
         }
 
         private async void OnAction(IDictionary<string, string> data) {
@@ -203,13 +213,15 @@ namespace Notiwin {
             });
         }
 
-        private void OpenLoginWindow(bool openHidden = false) {
+        private void OpenLoginWindow(bool openHidden = false, bool logout = false) {
             if (loginWindow == null) {
                 loginWindow = new LoginWindow();
                 loginWindow.TokenAccept += OnTokenAccept;
                 loginWindow.TokenDeny += OnTokenDeny;
                 loginWindow.ApiKey += OnApiKey;
             }
+
+            loginWindow.Logout = logout;
 
             if (!openHidden) {
                 loginWindow.Show();

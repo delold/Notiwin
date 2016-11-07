@@ -5,6 +5,9 @@ namespace Notiwin {
     /// Interaction logic for SettingsWindow.xaml
     /// </summary>
     public partial class SettingsWindow : Window {
+
+        public event LogoutHandler Logout;
+
         public SettingsWindow() {
             InitializeComponent();
 
@@ -32,8 +35,16 @@ namespace Notiwin {
             Close();
         }
 
+        private void LogoutClick(object sender, RoutedEventArgs e) {
+            Logout?.Invoke();
+            Close();
+        }
+
         private void OnRequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e) {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(e.Uri.ToString()));
         }
+
+        public delegate void LogoutHandler();
+
     }
 }

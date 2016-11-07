@@ -17,12 +17,10 @@ namespace Notiwin {
         public event TokenDenyHandler TokenDeny;
         public event ApiKeyHandler ApiKey;
 
-        public LoginWindow(bool logout = false) {
-            InitializeComponent();
+        public bool Logout { get; set; }
 
-            if (logout) {
-                //System.Windows.MessageBox.Show("Logout: " + SetOption(81, 3) + " _ " + SetOption(42, null));
-            }
+        public LoginWindow() {
+            InitializeComponent();
 
             LoginBrowser.Navigated += OnNavigate;
             LoginBrowser.LoadCompleted += OnLoadCompleted;
@@ -62,9 +60,15 @@ namespace Notiwin {
             String source = ((WebBrowser)sender).Source.ToString();
 
             if (source.Contains("pushbullet.com")) {
-                string cookie = GetApiKeyFromCookie();
-                if (cookie?.Length > 0) {
-                    ApiKey?.Invoke(cookie);
+
+                if (Logout) {
+                    LoginBrowser.InvokeScript("execScript", new object[]{ "localStorage.clear();", "JavaScript" });
+                    Logout = false;
+                } else {
+                    string cookie = GetApiKeyFromCookie();
+                    if (cookie?.Length > 0) {
+                        ApiKey?.Invoke(cookie);
+                    }
                 }
             }
 
@@ -112,26 +116,8 @@ namespace Notiwin {
             return container["api_key"]?.Value;
         }
 
-        static bool SetOption(int settingCode, int? option) {
-            IntPtr optionPtr = IntPtr.Zero;
-            int size = 0;
-            if (option.HasValue) {
-                size = sizeof(int);
-                optionPtr = Marshal.AllocCoTaskMem(size);
-                Marshal.WriteInt32(optionPtr, option.Value);
-            }
-
-            bool success = InternetSetOption(IntPtr.Zero, settingCode, optionPtr, size);
-
-            if (optionPtr != IntPtr.Zero) Marshal.Release(optionPtr);
-            return success;
-        }
-
         [DllImport("wininet.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         protected static extern bool InternetGetCookieEx(string url, string cookieName, StringBuilder cookieData, ref int size, Int32 dwFlags, IntPtr lpReserved);
-
-        [DllImport("wininet.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
 
         public delegate void TokenAcceptHandler(string token);
         public delegate void TokenDenyHandler();
