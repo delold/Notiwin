@@ -63,8 +63,18 @@ namespace Notiwin {
             NotificationActivator.Action += OnAction;
             NotificationActivator.Initialize();
 
+            NetworkUtils.ConnectionChanged += OnNetworkChange;
+
             OpenLoginWindow(openHidden: true);
             Init();
+        }
+
+        private void OnNetworkChange(bool isConnected) {
+            if (isConnected && !websocket.IsConnected()) {
+                websocket.Connect();
+            } else if (websocket.IsConnected()) {
+                websocket.Disconnect();
+            }
         }
 
         private void OnLogout() {

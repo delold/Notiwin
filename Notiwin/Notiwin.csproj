@@ -156,6 +156,7 @@
     </Reference>
     <Reference Include="Windows.Data" />
     <Reference Include="Windows.Foundation" />
+    <Reference Include="Windows.Networking" />
     <Reference Include="Windows.UI" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
@@ -175,6 +176,7 @@
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\HashUtils.cs" />
+    <Compile Include="Utils\NetworkUtils.cs" />
     <Compile Include="Utils\NotificationUtils.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -244,6 +246,16 @@
       <FileType>Assembly</FileType>
     </PublishFile>
     <PublishFile Include="Windows.Foundation">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Exclude</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>Assembly</FileType>
+    </PublishFile>
+    <PublishFile Include="Windows.Networking">
       <Visible>False</Visible>
       <Group>
       </Group>

@@ -80,6 +80,7 @@ namespace Notiwin {
                 // wait 5 seconds instead of exponential backoff
                 // TODO: implement listener of network changes
                 if (attempts > 0) {
+                    
                     await (Task.Delay(5000));
                 }
 
